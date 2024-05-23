@@ -24,8 +24,8 @@ MODULE_LICENSE("GPL");
 MODULE_AUTHOR("LaVa264");
 MODULE_DESCRIPTION("Virtual Network Interface.");
 
-#define __pr_info(fmt, arg...) pr_info("%s(): " fmt, __FUNCTION__, ##arg)
-#define __pr_err(fmt, arg...) pr_err("%s(): " fmt, __FUNCTION__, ##arg)
+#define __pr_info(fmt, arg...) pr_info("%s(): " fmt "\n", __FUNCTION__, ##arg)
+#define __pr_err(fmt, arg...) pr_err("%s(): " fmt "\n", __FUNCTION__, ##arg)
 
 #define DEVICE_NAME "vni"
 
