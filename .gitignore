@@ -6,9 +6,4 @@
 *.symvers
 *.cmd
 *.o.*
-arm-gnu-toolchain*
-busybox*
-linux-*
-qemu/qemu/
-rootfs*
-pciutils/
+.vscode/*
