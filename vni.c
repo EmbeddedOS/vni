@@ -18,6 +18,8 @@
 #include <linux/netdevice.h>
 #include <linux/etherdevice.h>
 
+#include "protocol.h"
+
 /* Public define -------------------------------------------------------------*/
 
 MODULE_LICENSE("GPL");
@@ -89,10 +91,10 @@ static void vni_setup(struct net_device *dev)
 {
     __pr_info("Called.");
 
-    dev->mtu = 64 * 1024;            /* 64 bytes. */
-    dev->hard_header_len = ETH_HLEN; /* 14 bytes. */
-    dev->hard_header_len = ETH_ALEN; /* 6 bytes. */
-    dev->addr_len = ETH_ALEN;        /* 6 bytes, Ethernet MAC address length. */
+    dev->mtu = 64 * 1024;              /* 64 bytes. */
+    dev->hard_header_len = HEADER_LEN; /* 14 bytes. */
+    dev->min_header_len = HEADER_LEN;  /* 14 bytes. */
+    dev->addr_len = ADDR_LEN;          /* 6 bytes. */
 
     dev->netdev_ops = &vni_ops; /* Required, cannot be NULL. */
 }
@@ -153,7 +155,8 @@ static int vni_netdev_init(struct net_device *dev)
 static int vni_netdev_start_xmit(struct sk_buff *skb,
                                  struct net_device *dev)
 {
-    __pr_info("Called.");
+    __pr_info("User request to sent: %s", skb->data);
+
     return NETDEV_TX_OK;
 }
 
@@ -162,6 +165,10 @@ static int vni_netdev_open(struct net_device *dev)
     __pr_info("Called.");
 
     /* Set MAC address. */
-    memcpy(dev->dev_addr, "ABCDEF", ETH_ALEN);
+    memcpy(dev->dev_addr, ADDR_STR, ADDR_LEN);
+
+    /* Start TX queue that allow upper layers to call the device
+     * hard_start_xmit() routine. */
+    netif_start_queue(dev);
     return 0;
 }
