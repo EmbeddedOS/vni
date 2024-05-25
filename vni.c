@@ -16,8 +16,10 @@
 #include <linux/init.h>
 #include <linux/printk.h>
 #include <linux/netdevice.h>
+#include <linux/skbuff.h>
 #include <linux/etherdevice.h>
-
+#include <linux/net_tstamp.h>
+#include <net/sock.h>
 #include "protocol.h"
 
 /* Public define -------------------------------------------------------------*/
@@ -156,6 +158,21 @@ static int vni_netdev_start_xmit(struct sk_buff *skb,
                                  struct net_device *dev)
 {
     __pr_info("User request to sent: %s", skb->data);
+
+    // skb_orphan(skb);
+	// skb_tx_timestamp(skb);
+
+	// /* do not fool net_timestamp_check() with various clock bases */
+	// //skb_clear_tstamp(skb);
+    // /* Before queueing this packet to __netif_rx(),
+    //  * make sure dst is refcounted.
+    //  */
+    // skb_dst_force(skb);
+
+    if (likely(netif_rx(skb) != NET_RX_SUCCESS))
+    {
+        __pr_err("Failed to push packet to the RX queue!");
+    }
 
     return NETDEV_TX_OK;
 }

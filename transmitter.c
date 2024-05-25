@@ -11,8 +11,11 @@
 #include <netinet/in.h>
 #include <netinet/if_ether.h>
 
+#include "protocol.h"
+
 #define INTERFACE_MAX_LENGTH 20
-#define DATA    "Hi There"
+#define HEADER "00000000000000"   /* Dummy 14 bytes for header. */
+#define DATA "Im here"
 
 int main(int argc, char **argv)
 {
@@ -51,8 +54,12 @@ int main(int argc, char **argv)
     socket_address.sll_ifindex = interface_idx.ifr_ifindex;
 
     /* 3. Send data to the index. */
-    res = sendto(fd, DATA, strlen(DATA), 0,
-                 (struct sockaddr*)&socket_address, sizeof(struct sockaddr_ll));
+    res = sendto(fd,
+                 HEADER DATA,
+                 strlen(HEADER DATA),
+                 0,
+                 (struct sockaddr *)&socket_address,
+                 sizeof(struct sockaddr_ll));
     if (res < 0)
     {
         printf("Cannot send: -%d\n", errno);
