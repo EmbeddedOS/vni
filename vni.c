@@ -169,10 +169,10 @@ static int vni_netdev_start_xmit(struct sk_buff *skb,
     //  */
     // skb_dst_force(skb);
 
-    if (likely(netif_rx(skb) != NET_RX_SUCCESS))
-    {
-        __pr_err("Failed to push packet to the RX queue!");
-    }
+    // if (likely(netif_rx(skb) != NET_RX_SUCCESS))
+    // {
+    //     __pr_err("Failed to push packet to the RX queue!");
+    // }
 
     return NETDEV_TX_OK;
 }

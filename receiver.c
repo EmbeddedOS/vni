@@ -14,8 +14,29 @@
 #include <netinet/if_ether.h>
 #include "protocol.h"
 
-
 #define INTERFACE_MAX_LENGTH 20
+
+void print_hx(const char *p, int length)
+{
+    if (length <= 0)
+    {
+        return;
+    }
+
+    printf("{", length);
+
+    for (int i = 0; i < length; i++)
+    {
+        char c = p[i];
+        printf("0x%2X", c & 0xff);
+        if (i < length - 1)
+        {
+            printf(", ");
+        }
+    }
+
+    printf("}\n");
+}
 
 void sigint_handler(int sig)
 {
@@ -28,6 +49,7 @@ int main(int argc, char **argv)
     char interface[INTERFACE_MAX_LENGTH] = {0};
     int res = 0;
     int fd = 0;
+    struct ifreq interface_idx = {0};
     struct sockaddr_ll socket_address = {0};
     socklen_t len = 0;
 
@@ -54,14 +76,22 @@ int main(int argc, char **argv)
     }
 
     /* 2. Bind socket to the interface. */
-    res = setsockopt(fd,
-                     SOL_SOCKET,
-                     SO_BINDTODEVICE,
-                     interface,
-                     strlen(interface)+1);
+    strncpy(interface_idx.ifr_name, interface, INTERFACE_MAX_LENGTH);
+    if (ioctl(fd, SIOCGIFINDEX, &interface_idx) < 0)
+    {
+        printf("Cannot get interface index: -%d\n", errno);
+        close(fd);
+        exit(EXIT_FAILURE);
+    }
+
+    socket_address.sll_ifindex = interface_idx.ifr_ifindex;
+    socket_address.sll_family = AF_PACKET;
+    socket_address.sll_protocol = htons(ETH_P_ALL);
+
+    res = bind(fd, (struct sockaddr *)&socket_address, sizeof(socket_address));
     if (res < 0)
     {
-        printf("Cannot setsockopt: -%d\n", errno);
+        printf("Cannot bind to the interface: -%d\n", errno);
         close(fd);
         exit(EXIT_FAILURE);
     }
@@ -80,7 +110,7 @@ int main(int argc, char **argv)
             exit(EXIT_FAILURE);
         }
 
-        printf("Receive: %s\n", buffer);
+        print_hx(buffer, res);
     }
 
     return close(fd);
